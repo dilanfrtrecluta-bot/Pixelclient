@@ -39,6 +39,7 @@
 
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QPushButton>
 #include "Application.h"
 #include "BuildConfig.h"
 #include "FileSystem.h"
@@ -58,6 +59,29 @@ JavaSettingsWidget::JavaSettingsWidget(BaseInstance* instance, QWidget* parent)
     : QWidget(parent), m_instance(instance), m_ui(new Ui::JavaSettingsWidget)
 {
     m_ui->setupUi(this);
+
+    // Offer a safe, hardware-aware starting point without forcing JVM flags or
+    // changing the user's settings until they explicitly apply it.
+    auto* lightweightMemoryButton = new QPushButton(tr("Apply lightweight memory profile"), this);
+    lightweightMemoryButton->setToolTip(tr("Choose a conservative Java heap size that leaves memory available for your system and other applications."));
+    m_ui->verticalLayout->insertWidget(2, lightweightMemoryButton);
+    connect(lightweightMemoryButton, &QPushButton::clicked, this, [this] {
+        const unsigned int systemRamMiB = HardwareInfo::totalRamMiB();
+        const unsigned int recommendedMaxMiB = systemRamMiB == 0
+                                                   ? 2048u
+                                                   : qMax(512u, qMin(4096u, systemRamMiB > 2048u ? systemRamMiB - 2048u : systemRamMiB / 2u));
+        const int maxMiB = static_cast<int>(recommendedMaxMiB);
+        const int minMiB = qMax(256, maxMiB / 4);
+
+        if (m_instance != nullptr) {
+            // Make the per-instance memory values explicit instead of leaving
+            // the instance to inherit a different global heap configuration.
+            m_ui->memoryGroupBox->setChecked(true);
+        }
+        m_ui->minMemSpinBox->setValue(minMiB);
+        m_ui->maxMemSpinBox->setValue(maxMiB);
+        updateThresholds();
+    });
 
     if (m_instance == nullptr) {
         m_ui->javaDownloadBtn->hide();
@@ -84,7 +108,7 @@ JavaSettingsWidget::JavaSettingsWidget(BaseInstance* instance, QWidget* parent)
 
         connect(settings->getSetting("OverrideJavaLocation").get(), &Setting::SettingChanged, m_ui->javaInstallationGroupBox,
                 [this, settings] { m_ui->javaInstallationGroupBox->setChecked(settings->get("OverrideJavaLocation").toBool()); });
-        connect(settings->getSetting("JavaPath").get(), &Setting::SettingChanged, m_ui->javaInstallationGroupBox,
+        connect(settings->getSetting("JavaPath").get(), &Setting::SettingChanged, m_ui->javaPathTextBox,
                 [this, settings] { m_ui->javaPathTextBox->setText(settings->get("JavaPath").toString()); });
 
         connect(m_ui->javaDownloadBtn, &QPushButton::clicked, this, [this] {

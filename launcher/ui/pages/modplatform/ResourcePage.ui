@@ -11,17 +11,24 @@
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>10</number>
+   </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLineEdit" name="searchEdit">
+       <property name="clearButtonEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QPushButton" name="resourceFilterButton">
        <property name="text">
         <string>Filter options</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="searchEdit"/>
      </item>
     </layout>
    </item>
@@ -94,10 +101,13 @@
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>searchEdit</tabstop>
+  <tabstop>resourceFilterButton</tabstop>
   <tabstop>packView</tabstop>
   <tabstop>packDescription</tabstop>
   <tabstop>sortByBox</tabstop>
   <tabstop>versionSelectionBox</tabstop>
+  <tabstop>resourceSelectionButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

@@ -33,6 +33,7 @@
 #include "ui/themes/FreesmLightTheme.h"
 #include "ui/themes/FreesmTheme.h"
 #include "ui/themes/GruvboxTheme.h"
+#include "ui/themes/PixelLightTheme.h"
 #include "ui/themes/SystemTheme.h"
 
 #include "Application.h"
@@ -144,6 +145,7 @@ void ThemeManager::initializeWidgets()
     themeDebugLog() << "Loading Built-in Theme:" << addTheme(std::make_unique<FreesmTheme>());
     themeDebugLog() << "Loading Built-in Theme:" << addTheme(std::make_unique<GruvboxTheme>());
     themeDebugLog() << "Loading Built-in Theme:" << addTheme(std::make_unique<FreesmLightTheme>());
+    themeDebugLog() << "Loading Built-in Theme:" << addTheme(std::make_unique<PixelLightTheme>());
 
     themeDebugLog() << "<> Initializing System Widget Themes";
     QStringList styles = QStyleFactory::keys();

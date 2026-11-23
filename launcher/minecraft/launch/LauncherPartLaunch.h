@@ -25,7 +25,7 @@ class LauncherPartLaunch : public LaunchStep {
     Q_OBJECT
    public:
     explicit LauncherPartLaunch(LaunchTask* parent);
-    virtual ~LauncherPartLaunch() = default;
+    virtual ~LauncherPartLaunch();
 
     virtual void executeTask();
     virtual bool abort();
@@ -47,4 +47,5 @@ class LauncherPartLaunch : public LaunchStep {
     MinecraftTarget::Ptr m_targetToJoin;
 
     bool mayProceed = false;
+    bool m_loweredLauncherThreadPriority = false;
 };

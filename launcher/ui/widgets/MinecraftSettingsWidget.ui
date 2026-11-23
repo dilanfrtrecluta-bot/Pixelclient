@@ -905,6 +905,16 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_13">
               <item>
+               <widget class="QCheckBox" name="lowerLauncherThreadPriorityCheck">
+                <property name="toolTip">
+                 <string>Windows only. Temporarily lowers the launcher main thread priority while a game runs. May help when the CPU is busy; performance is not guaranteed and the launcher may respond more slowly.</string>
+                </property>
+                <property name="text">
+                 <string>Reduce launcher CPU priority while playing (experimental)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QCheckBox" name="enableFeralGamemodeCheck">
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable Feral Interactive's GameMode, to potentially improve gaming performance.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

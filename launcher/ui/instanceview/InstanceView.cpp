@@ -53,7 +53,6 @@
 #include <QPixmap>
 #include <QRandomGenerator>
 #include <QScrollBar>
-#include <QThreadPool>
 #include <QTimer>
 #include <QtMath>
 
@@ -522,11 +521,11 @@ void InstanceView::setPaintSnow(bool visible)
     m_snowTimer = nullptr;
 
     if (visible) {
-        // Create a timer to update the snow positions every 16 milliseconds
+        // Keep snow state and viewport access on the GUI thread. The timer is
+        // owned by this view, so no background work can outlive the widget.
         m_snowTimer = new QTimer(this);
+        connect(m_snowTimer, &QTimer::timeout, this, &InstanceView::updateSnowflakesPosition);
         m_snowTimer->start(33);
-        connect(m_snowTimer, &QTimer::timeout, this,
-                [this] { QThreadPool::globalInstance()->start([this] { this->updateSnowflakesPosition(); }); });
 
     } else {
         // Clear the snowflakes vector

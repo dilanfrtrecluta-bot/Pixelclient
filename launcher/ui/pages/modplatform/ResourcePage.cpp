@@ -72,6 +72,9 @@ ResourcePage::ResourcePage(ResourceDownloadDialog* parent, BaseInstance& baseIns
     m_searchTimer.setSingleShot(true);
 
     connect(&m_searchTimer, &QTimer::timeout, this, &ResourcePage::triggerSearch);
+    // Respond to user edits (including paste and the clear button), without
+    // starting a search when another page sets the search term in code.
+    connect(m_ui->searchEdit, &QLineEdit::textEdited, this, [this] { m_searchTimer.start(350); });
 
     // hide progress bar to prevent weird artifact
     m_fetchProgress.hide();
@@ -133,16 +136,12 @@ auto ResourcePage::eventFilter(QObject* watched, QEvent* event) -> bool
     if (event->type() == QEvent::KeyPress) {
         auto* keyEvent = static_cast<QKeyEvent*>(event);
         if (watched == m_ui->searchEdit) {
-            if (keyEvent->key() == Qt::Key_Return) {
+            if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
+                m_searchTimer.stop();
                 triggerSearch();
                 keyEvent->accept();
                 return true;
             }
-            if (m_searchTimer.isActive()) {
-                m_searchTimer.stop();
-            }
-
-            m_searchTimer.start(350);
 
         } else if (watched == m_ui->packView) {
             // stop the event from going to the confirm button

@@ -140,7 +140,18 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
     connect(m_ui->maximizedCheckBox, &QCheckBox::toggled, this,
             [this](const bool value) { m_ui->maximizedWarning->setVisible(value && (m_instance == nullptr || !m_instance->isLegacy())); });
 
-#if !defined(Q_OS_LINUX)
+#if defined(Q_OS_WIN)
+    // This option is global: one launcher thread may serve several instances.
+    m_ui->lowerLauncherThreadPriorityCheck->setVisible(m_instance == nullptr);
+    m_ui->enableFeralGamemodeCheck->hide();
+    m_ui->enableMangoHud->hide();
+    m_ui->useDiscreteGpuCheck->hide();
+    m_ui->useZink->hide();
+    if (m_instance != nullptr)
+        m_ui->perfomanceGroupBox->hide();
+#elif defined(Q_OS_LINUX)
+    m_ui->lowerLauncherThreadPriorityCheck->hide();
+#else
     m_ui->perfomanceGroupBox->hide();
 #endif
 
@@ -242,6 +253,7 @@ void MinecraftSettingsWidget::loadSettings()
 #endif
 
     // Performance
+    m_ui->lowerLauncherThreadPriorityCheck->setChecked(APPLICATION->settings()->get("LowerLauncherThreadPriority").toBool());
     m_ui->perfomanceGroupBox->setChecked(m_instance == nullptr || settings->get("OverridePerformance").toBool());
     m_ui->enableFeralGamemodeCheck->setChecked(settings->get("EnableFeralGamemode").toBool());
     m_ui->enableMangoHud->setChecked(settings->get("EnableMangoHud").toBool());
@@ -454,6 +466,12 @@ void MinecraftSettingsWidget::saveSettings()
         settings->reset("UseNativeOpenAL");
         settings->reset("CustomOpenALPath");
     }
+
+    // This is a launcher-wide option, not a per-instance override.
+#ifdef Q_OS_WIN
+    if (m_instance == nullptr)
+        settings->set("LowerLauncherThreadPriority", m_ui->lowerLauncherThreadPriorityCheck->isChecked());
+#endif
 
     // Performance
     bool performance = m_instance == nullptr || m_ui->perfomanceGroupBox->isChecked();

@@ -43,6 +43,7 @@
 #include "FileSystem.h"
 #include "launch/LaunchTask.h"
 #include "minecraft/MinecraftInstance.h"
+#include "LauncherThreadPriority.h"
 
 #ifdef Q_OS_LINUX
 #include "gamemode_client.h"
@@ -67,6 +68,12 @@ LauncherPartLaunch::LauncherPartLaunch(LaunchTask* parent)
 
     connect(&m_process, &LoggedProcess::log, this, &LauncherPartLaunch::logLines);
     connect(&m_process, &LoggedProcess::stateChanged, this, &LauncherPartLaunch::on_state);
+}
+
+LauncherPartLaunch::~LauncherPartLaunch()
+{
+    if (m_loweredLauncherThreadPriority)
+        LauncherThreadPriority::release();
 }
 
 void LauncherPartLaunch::executeTask()
@@ -171,12 +178,20 @@ void LauncherPartLaunch::on_state(LoggedProcess::State state)
         }
         case LoggedProcess::Aborted:
         case LoggedProcess::Crashed: {
+            if (m_loweredLauncherThreadPriority) {
+                LauncherThreadPriority::release();
+                m_loweredLauncherThreadPriority = false;
+            }
             m_parent->setPid(-1);
             m_parent->instance()->setMinecraftRunning(false);
             emitFailed(tr("Game crashed."));
             return;
         }
         case LoggedProcess::Finished: {
+            if (m_loweredLauncherThreadPriority) {
+                LauncherThreadPriority::release();
+                m_loweredLauncherThreadPriority = false;
+            }
             auto instance = m_parent->instance();
             if (instance->settings()->get("CloseAfterLaunch").toBool())
                 APPLICATION->showMainWindow();
@@ -196,6 +211,15 @@ void LauncherPartLaunch::on_state(LoggedProcess::State state)
             break;
         }
         case LoggedProcess::Running:
+#ifdef Q_OS_WIN
+            if (!m_loweredLauncherThreadPriority && APPLICATION->settings()->get("LowerLauncherThreadPriority").toBool()) {
+                m_loweredLauncherThreadPriority = LauncherThreadPriority::acquire();
+                if (m_loweredLauncherThreadPriority)
+                    emit logLine(tr("Launcher main thread priority lowered while the game runs (experimental)."), MessageLevel::Launcher);
+                else
+                    emit logLine(tr("Could not lower launcher thread priority; continuing normally."), MessageLevel::Warning);
+            }
+#endif
             emit logLine(QString("Minecraft process ID: %1\n\n").arg(m_process.processId()), MessageLevel::Launcher);
             m_parent->setPid(m_process.processId());
             // send the launch script to the launcher part

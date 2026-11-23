@@ -149,6 +149,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
+    // Reuse the existing action so the header and toolbar always stay in sync.
+    ui->addInstanceHeaderButton->setDefaultAction(ui->actionAddInstance);
+
     setWindowIcon(APPLICATION->logo());
     setWindowTitle(APPLICATION->applicationDisplayName());
 #ifndef QT_NO_ACCESSIBILITY

@@ -823,6 +823,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("CustomGLFWPath", "");
 
         // Performance related options
+        m_settings->registerSetting("LowerLauncherThreadPriority", false);
         m_settings->registerSetting("EnableFeralGamemode", false);
         m_settings->registerSetting("EnableMangoHud", false);
         m_settings->registerSetting("UseDiscreteGpu", false);

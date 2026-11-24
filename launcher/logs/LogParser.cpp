@@ -104,6 +104,14 @@ std::optional<LogParser::ParsedItem> LogParser::parseNext()
         return {};
     }
 
+    // Plain log lines cannot contain an XML event without '<'. Avoid creating
+    // an XML parser state and scanning them again on the common path.
+    if (!m_buffer.contains(QLatin1Char('<'))) {
+        auto text = QString(m_buffer);
+        m_buffer.clear();
+        return LogParser::PlainText{ text };
+    }
+
     if (m_buffer.trimmed().isEmpty()) {
         auto text = QString(m_buffer);
         m_buffer.clear();
